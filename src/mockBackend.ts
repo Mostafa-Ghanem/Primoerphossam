@@ -14,8 +14,9 @@ export function mockBackend() {
       invoices: [],
       expenses: [],
       users: [
-        { id: '1', name: 'أحمد سعيد', email: 'admin@primo.com', role: 'مدير نظام', lastActive: 'نشط الآن' },
-        { id: '2', name: 'سارة محمد', email: 'sara@primo.com', role: 'محاسب', lastActive: 'منذ ساعتين' },
+        { id: '1', name: 'أحمد سعيد', email: 'admin@primo.com', password: '123', role: 'مدير نظام', lastActive: 'نشط الآن' },
+        { id: '2', name: 'سارة محمد', email: 'sara@primo.com', password: '123', role: 'محاسب', lastActive: 'منذ ساعتين' },
+        { id: '3', name: 'خالد صبحي', email: 'khaled@primo.com', password: '123', role: 'موظف استقبال', lastActive: 'منذ ٥ ساعات' },
       ],
       employees: [],
       cafeOrders: [],
@@ -88,6 +89,16 @@ export function mockBackend() {
       const method = (options.method || 'GET').toUpperCase();
       const pathParts = url.split('/').filter(Boolean); // ['api', 'data', 'services']
       
+      // Auth Login Endpoint
+      if (pathParts[1] === 'login' && method === 'POST') {
+         const body = JSON.parse(options.body as string || '{}');
+         const user = db.users.find((u: any) => u.email === body.email && (u.password === body.password || u.password === undefined));
+         if (user) {
+             return new Response(JSON.stringify(user), { status: 200, headers: { 'Content-Type': 'application/json' } });
+         }
+         return new Response(JSON.stringify({error: 'Invalid credentials'}), { status: 401, headers: { 'Content-Type': 'application/json' } });
+      }
+
       // /api/settings or /api/data/settings
       if (pathParts[1] === 'settings' || (pathParts[1] === 'data' && pathParts[2] === 'settings')) {
          if (method === 'GET') {
@@ -134,6 +145,7 @@ export function mockBackend() {
             const body = JSON.parse(options.body as string || '{}');
             const index = db[collection].findIndex((i: any) => i.id === id);
             if (index !== -1) {
+               if (body.password === "") delete body.password;
                db[collection][index] = { ...db[collection][index], ...body };
                logActivity(db, collection, db[collection][index], 'edit');
                saveDb(db);

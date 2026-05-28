@@ -21,6 +21,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: string;
   lastActive: string;
   status?: 'active' | 'inactive';
@@ -47,7 +48,7 @@ const Users: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'موظف استقبال' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'موظف استقبال' });
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -77,10 +78,10 @@ const Users: React.FC = () => {
   const handleOpenModal = (user?: User) => {
     if (user) {
       setEditingUser(user);
-      setFormData({ name: user.name, email: user.email, role: user.role });
+      setFormData({ name: user.name, email: user.email, password: user.password || '', role: user.role });
     } else {
       setEditingUser(null);
-      setFormData({ name: '', email: '', role: 'موظف استقبال' });
+      setFormData({ name: '', email: '', password: '', role: 'موظف استقبال' });
     }
     setShowModal(true);
   };
@@ -364,6 +365,20 @@ const Users: React.FC = () => {
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-2xl pr-12 pl-4 py-4 focus:ring-2 focus:ring-primary/20 outline-none font-bold"
                       placeholder="email@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-right">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 px-1">كلمة المرور</label>
+                  <div className="relative">
+                    <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input 
+                      type="text"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-2xl pr-12 pl-4 py-4 focus:ring-2 focus:ring-primary/20 outline-none font-bold"
+                      placeholder={editingUser ? "اتركه فارغاً لعدم التغيير" : "كلمة مرور الدخول للمستخدم"}
                     />
                   </div>
                 </div>

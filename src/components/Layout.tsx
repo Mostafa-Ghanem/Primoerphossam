@@ -19,13 +19,17 @@ import {
   ShoppingCart
 } from 'lucide-react';
 
+import { CurrentUser } from '../pages/Login';
+
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  currentUser: CurrentUser;
+  onLogout: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
+const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, currentUser, onLogout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
@@ -41,18 +45,27 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) =>
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const menuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'لوحة التحكم', labelEn: 'Dashboard' },
-    { id: 'pos', icon: ShoppingCart, label: 'نقطة البيع POS', labelEn: 'POS' },
-    { id: 'customers', icon: Users, label: 'العملاء', labelEn: 'Customers' },
-    { id: 'services', icon: Settings, label: 'الخدمات', labelEn: 'Services' },
-    { id: 'invoices', icon: FileText, label: 'الفواتير', labelEn: 'Invoices' },
-    { id: 'cafe', icon: Coffee, label: 'الكافية', labelEn: 'Cafe' },
-    { id: 'employees', icon: UserCircle, label: 'الموظفين', labelEn: 'Employees' },
-    { id: 'expenses', icon: Wallet, label: 'المصروفات', labelEn: 'Expenses' },
-    { id: 'users', icon: UserCircle, label: 'المستخدمين والصلاحيات', labelEn: 'Users & Permissions' },
-    { id: 'reports', icon: BarChart3, label: 'التقارير', labelEn: 'Reports' },
+  const allMenuItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'لوحة التحكم', labelEn: 'Dashboard', roles: ['مدير نظام', 'محاسب'] },
+    { id: 'pos', icon: ShoppingCart, label: 'نقطة البيع POS', labelEn: 'POS', roles: ['مدير نظام', 'موظف استقبال'] },
+    { id: 'customers', icon: Users, label: 'العملاء', labelEn: 'Customers', roles: ['مدير نظام', 'محاسب', 'موظف استقبال'] },
+    { id: 'services', icon: Settings, label: 'الخدمات', labelEn: 'Services', roles: ['مدير نظام', 'موظف استقبال'] },
+    { id: 'invoices', icon: FileText, label: 'الفواتير', labelEn: 'Invoices', roles: ['مدير نظام', 'محاسب', 'موظف استقبال'] },
+    { id: 'cafe', icon: Coffee, label: 'الكافية', labelEn: 'Cafe', roles: ['مدير نظام', 'موظف استقبال'] },
+    { id: 'employees', icon: UserCircle, label: 'الموظفين', labelEn: 'Employees', roles: ['مدير نظام'] },
+    { id: 'expenses', icon: Wallet, label: 'المصروفات', labelEn: 'Expenses', roles: ['مدير نظام', 'محاسب'] },
+    { id: 'users', icon: UserCircle, label: 'المستخدمين والصلاحيات', labelEn: 'Users & Permissions', roles: ['مدير نظام'] },
+    { id: 'reports', icon: BarChart3, label: 'التقارير', labelEn: 'Reports', roles: ['مدير نظام', 'محاسب'] },
   ];
+
+  const menuItems = allMenuItems.filter(item => item.roles.includes(currentUser.role));
+
+  // Verify access for current tab
+  React.useEffect(() => {
+    if (!menuItems.find(item => item.id === activeTab)) {
+      setActiveTab(menuItems[0]?.id || 'dashboard');
+    }
+  }, [currentUser.role, activeTab, menuItems]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -125,7 +138,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) =>
             {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
             {isSidebarOpen && <span>{isDarkMode ? 'الوضع المضيء' : 'الوضع الليلي'}</span>}
           </button>
-          <button className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-red-50 text-red-500 transition-all font-medium">
+          <button 
+            onClick={onLogout}
+            className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-red-50 text-red-500 transition-all font-medium"
+          >
             <LogOut size={22} />
             {isSidebarOpen && <span>تسجيل الخروج</span>}
           </button>
@@ -154,11 +170,11 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) =>
           </div>
           <div className="flex items-center gap-3 md:gap-4">
             <div className="text-left rtl hidden sm:block">
-              <p className="font-semibold text-sm">HOSSAM</p>
-              <p className="text-xs text-slate-500">مدير PRIMO</p>
+              <p className="font-semibold text-sm">{currentUser.name}</p>
+              <p className="text-xs text-slate-500">{currentUser.role}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20">
-              H
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 uppercase">
+              {currentUser.name.charAt(0)}
             </div>
           </div>
         </header>

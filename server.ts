@@ -41,9 +41,9 @@ async function startServer() {
     expenses: [],
     cafeOrders: [],
     users: [
-      { id: '1', name: 'أحمد سعيد', email: 'admin@primo.com', role: 'مدير نظام', lastActive: 'نشط الآن' },
-      { id: '2', name: 'سارة محمد', email: 'sara@primo.com', role: 'محاسب', lastActive: 'منذ ساعتين' },
-      { id: '3', name: 'خالد صبحي', email: 'khaled@primo.com', role: 'موظف استقبال', lastActive: 'منذ ٥ ساعات' },
+      { id: '1', name: 'أحمد سعيد', email: 'admin@primo.com', password: '123', role: 'مدير نظام', lastActive: 'نشط الآن' },
+      { id: '2', name: 'سارة محمد', email: 'sara@primo.com', password: '123', role: 'محاسب', lastActive: 'منذ ساعتين' },
+      { id: '3', name: 'خالد صبحي', email: 'khaled@primo.com', password: '123', role: 'موظف استقبال', lastActive: 'منذ ٥ ساعات' },
     ],
     activities: [],
     settings: {
@@ -69,6 +69,17 @@ async function startServer() {
   };
 
   let invoiceCounter = 0;
+
+  app.post("/api/login", (req, res) => {
+    const { email, password } = req.body;
+    const users = data.users || [];
+    const user = users.find((u: any) => u.email === email && (u.password === password || u.password === undefined));
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  });
 
   app.get("/api/settings", (req, res) => {
     res.json(data.settings);
@@ -142,6 +153,7 @@ async function startServer() {
     if (data[collection]) {
       const index = data[collection].findIndex((item: any) => item.id === id);
       if (index !== -1) {
+        if (req.body.password === "") delete req.body.password;
         data[collection][index] = { ...data[collection][index], ...req.body };
         
         // Log Activity
