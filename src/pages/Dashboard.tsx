@@ -50,9 +50,16 @@ interface WidgetConfig {
   order: number;
 }
 
+const defaultWidgets: WidgetConfig[] = [
+  { id: 'stats_grid', title: 'شبكة الإحصائيات', enabled: true, order: 1 },
+  { id: 'weekly_chart', title: 'الرسم البياني الأسبوعي', enabled: true, order: 2 },
+  { id: 'performance_memos', title: 'ملاحظات الأداء', enabled: true, order: 3 },
+  { id: 'recent_activity', title: 'النشاط الأخير', enabled: true, order: 4 },
+];
+
 const Dashboard: React.FC = () => {
   const [showCustomizer, setShowCustomizer] = useState(false);
-  const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
+  const [widgets, setWidgets] = useState<WidgetConfig[]>(defaultWidgets);
   const [stats, setStats] = useState([
     { title: 'سيارات اليوم', value: '0', icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
     { title: 'الأرباح اليومية', value: '0 ج.م', icon: DollarSign, color: 'text-green-500', bg: 'bg-green-50' },
@@ -79,8 +86,13 @@ const Dashboard: React.FC = () => {
     try {
       const res = await fetch('/api/settings');
       if (res.ok) {
-        const data = await res.json();
-        setWidgets(data.dashboard.widgets.sort((a: any, b: any) => a.order - b.order));
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const data = await res.json();
+          if (data && data.dashboard && data.dashboard.widgets && data.dashboard.widgets.length > 0) {
+            setWidgets(data.dashboard.widgets.sort((a: any, b: any) => a.order - b.order));
+          }
+        }
       }
     } catch (e) {
       console.error(e);
@@ -103,8 +115,17 @@ const Dashboard: React.FC = () => {
   const fetchStats = async () => {
     try {
       const fetchCollection = async (coll: string) => {
-        const res = await fetch(`/api/data/${coll}`);
-        return res.json();
+        try {
+          const res = await fetch(`/api/data/${coll}`);
+          if (!res.ok) return [];
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+            return await res.json();
+          }
+          return [];
+        } catch (e) {
+          return [];
+        }
       };
 
       const [customers, invoices, employees, expenses, activitiesRes] = await Promise.all([
