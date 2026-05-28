@@ -1,0 +1,9 @@
+{
+  "name": "PRIMO Car Wash",
+  "description": "نظام PRIMO الاحترافي المتكامل لإدارة مغاسل السيارات - واجهة متميزة وأداء فائق.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

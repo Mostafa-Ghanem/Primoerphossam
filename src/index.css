@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Almarai", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #0EA5E9;
+  --color-primary-dark: #0284C7;
+  --color-secondary: #3B82F6;
+  --color-accent: #60A5FA;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-900 bg-slate-50;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-invoice, #printable-invoice * {
+    visibility: visible;
+  }
+  #printable-invoice {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 210mm; /* Standard A4 width, or whatever fits your needs */
+    height: auto;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+    z-index: 9999;
+  }
+  
+  /* Hide UI elements within the printable area if any */
+  .no-print {
+    display: none !important;
+  }
+}
+
